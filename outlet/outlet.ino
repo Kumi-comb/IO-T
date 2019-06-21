@@ -13,6 +13,8 @@
 
 Adafruit_SSD1306 display(128,64,&Wire,2); //displayインスタンス作成 エラーが出た場合は2を5に変えてみる
 
+String beforeStatus = "";
+
 String httpGET(String url) {
     HTTPClient client;
 
@@ -28,6 +30,35 @@ String httpGET(String url) {
     client.end();
 
     return result;
+}
+
+String httpPUT(String url, String contentType, String data) {
+    HTTPClient client;
+
+    client.begin(url);
+    client.addHeader("Content-Type", contentType)
+
+    int statusCode = client.PUT(data);
+    if (statusCode < 0) {
+        result = client.errorToString(statusCode);
+    } else {
+        result = client.getString();
+    }
+    client.end();
+
+    return result;
+}
+
+
+void setDeviceStatus(String status) {
+    StaticJsonBuffer<4> jsonBuffer;
+    JsonObject& root = jsonBuffer.createObject();
+    root["type"] = "TOGGLE";
+    root["value"] = status;
+
+    String data;
+    root.printTo(data);
+    httpPUT("http://iot.nsrv.work/api/devices/2/status", "application/json", data);
 }
 
 void setup() {
@@ -58,7 +89,7 @@ void setup() {
     display.display();//バッファの内容を表示 これが無いと適用されない バッファの内容を表示 これが無いと適用されない 
 }
 
-void loop(){
+void loop() {
     String json = httpGET("http://iot.nsrv.work/api/devices/2/queue");
 
     const size_t jsonSize = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(6);
@@ -66,14 +97,18 @@ void loop(){
     JsonObject& root = jsonBuffer.parseObject(json);
 
     const char* value = root["value"];
-    String valueStatus = String(value);
+    String nowStatus = String(value);
 
     Serial.println(json);
 
-    if (valueStatus == "ON") {
-        digitalWrite(14, HIGH);
-    } else if (valueStatus == "OFF") {
-        digitalWrite(14, LOW);
+    if (beforeStatus != nowStatus) {
+        if (nowStatus == "ON") {
+            digitalWrite(14, HIGH);
+        } else if (nowStatus == "OFF") {
+            digitalWrite(14, LOW);
+        }
+
+        beforeStatus = nowStatus;s
     }
 
     delay(5000);
