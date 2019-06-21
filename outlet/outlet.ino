@@ -31,9 +31,9 @@ void setup(){
     display.display();//バッファの内容を表示 これが無いと適用されない バッファの内容を表示 これが無いと適用されない 
     delay(5000);
     display.clearDisplay();
-    display.display();
+    display.display();//バッファの内容を表示 これが無いと適用されない バッファの内容を表示 これが無いと適用されない 
 }
 
 void loop(){
-
+    
 }
