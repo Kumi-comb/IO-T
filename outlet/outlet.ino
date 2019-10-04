@@ -38,9 +38,11 @@ String httpPUT(String url, String contentType, String data) {
     HTTPClient client;
 
     client.begin(url);
-    client.addHeader("Content-Type", contentType)
+    client.addHeader("Content-Type", contentType);
 
     int statusCode = client.PUT(data);
+    String result;
+
     if (statusCode < 0) {
         result = client.errorToString(statusCode);
     } else {
@@ -115,6 +117,8 @@ void loop() {
         } else if (nowStatus == "OFF") {
             digitalWrite(14, LOW);
         }
+        
+        setDeviceStatus(nowStatus);
 
         beforeStatus = nowStatus;
     }
